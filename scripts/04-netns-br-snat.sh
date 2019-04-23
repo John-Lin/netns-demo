@@ -96,15 +96,15 @@ pe "ip link set dev ${VETH_5_NAME} master ${BRIDGE_NAME}"
 
 # pe "bridge link show"
 
-p "# Check bridge filter bridge-nf-call-iptables option"
-pe "cat /proc/sys/net/bridge/bridge-nf-call-iptables"
-wait
+# p "# Check bridge filter bridge-nf-call-iptables option"
+# pe "cat /proc/sys/net/bridge/bridge-nf-call-iptables"
+# wait
 
 pe "iptables -A FORWARD -i ${BRIDGE_NAME} -j ACCEPT"
 wait
 
-pe "echo 1 > /proc/sys/net/ipv4/ip_forward"
-wait
+# pe "echo 1 > /proc/sys/net/ipv4/ip_forward"
+# wait
 
 pe "ip addr add 10.0.1.1/24 brd + dev br0"
 wait
@@ -118,7 +118,7 @@ pe "ip netns exec ${POD_1_NAME} ip route"
 pe "ip netns exec ${POD_2_NAME} ip route"
 pe "ip netns exec ${POD_3_NAME} ip route"
 
-pe "iptables -t nat -A POSTROUTING -s 10.0.1.0/24 ! -o br0 -j MASQUERADE"
+pe "iptables -t nat -A POSTROUTING -s 10.0.1.0/24 -j MASQUERADE"
 
 # p "# Delete network namespace and bridge"
 # pe "ip netns del ${POD_1_NAME}"

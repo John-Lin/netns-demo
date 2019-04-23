@@ -25,5 +25,5 @@ pe "ip netns del ${POD_2_NAME}"
 pe "ip netns del ${POD_3_NAME}"
 pe "ip link delete ${BRIDGE_NAME} type bridge"
 pe "iptables -D FORWARD -i br0 -j ACCEPT"
-pe "iptables -t nat -D POSTROUTING -s 10.0.1.0/24 ! -o br0 -j MASQUERADE"
+pe "iptables -t nat -D POSTROUTING -s 10.0.1.0/24 -j MASQUERADE"
 
