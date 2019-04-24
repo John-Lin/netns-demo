@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # include demo-magic
-. ~/tools/demo-magic.sh -n -d
+. ~/tools/demo-magic.sh -n
 
 # hide the evidence
 clear
@@ -19,8 +19,6 @@ VETH_1_NAME="veth0-br"
 # Will wait until user presses enter
 PROMPT_TIMEOUT=0
 
-EXEC_NETNS="ip netns exec"
-
 p "# Add a network namespace named ${POD_1_NAME}"
 pe "ip netns add ${POD_1_NAME}"
 
@@ -29,7 +27,7 @@ pe "ip netns list"
 wait
 
 p "# Set ${POD_1_NAME} lo interface up"
-pe "${EXEC_NETNS} ${POD_1_NAME} ip link set lo up"
+pe "ip netns exec ${POD_1_NAME} ip link set lo up"
 
 p "# Create a bridge named br0"
 pe "ip link add ${BRIDGE_NAME} type bridge"
