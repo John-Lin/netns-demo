@@ -21,15 +21,6 @@ pe "ip netns add ${POD_2_NAME}"
 p "# Show network namespace list"
 pe "ip netns list"
 
-p "# Set lo interface up"
-pe "ip netns exec ${POD_1_NAME} ip link set lo up"
-pe "ip netns exec ${POD_2_NAME} ip link set lo up"
-
-p "# Show current network interfaces in ${POD_1_NAME} and ${POD_2_NAME}"
-pe "ip netns exec ${POD_1_NAME} ip addr"
-pe "ip netns exec ${POD_2_NAME} ip addr"
-wait
-
 p "# Add veth pairs from root network namespace"
 pe "ip link add ${VETH_0_NAME} type veth peer name ${VETH_1_NAME}"
 pe "ip addr"
@@ -44,13 +35,15 @@ pe "ip netns exec ${POD_1_NAME} ip addr"
 pe "ip netns exec ${POD_2_NAME} ip addr"
 wait
 
-p "# Set network interface up and give a IP address in ${POD_1_NAME}"
+p "# Set network interfaces up and give a IP address in ${POD_1_NAME}"
 pe "ip netns exec ${POD_1_NAME} ip addr add 10.0.1.1/24 dev ${VETH_0_NAME}"
 pe "ip netns exec ${POD_1_NAME} ip link set ${VETH_0_NAME} up"
+pe "ip netns exec ${POD_1_NAME} ip link set lo up"
 
-p "# Set network interface up and give a IP address in ${POD_2_NAME}"
+p "# Set network interfaces up and give a IP address in ${POD_2_NAME}"
 pe "ip netns exec ${POD_2_NAME} ip addr add 10.0.1.2/24 dev ${VETH_1_NAME}"
 pe "ip netns exec ${POD_2_NAME} ip link set ${VETH_1_NAME} up"
+pe "ip netns exec ${POD_2_NAME} ip link set lo up"
 
 p "# Ping ${POD_2_NAME} from ${POD_1_NAME}"
 pe "ip netns exec ${POD_1_NAME} ping -c 4 10.0.1.2"
