@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # include demo-magic
-. ~/tools/demo-magic.sh -n -d
+. ../tools/demo-magic.sh -n
 
 # hide the evidence
 clear

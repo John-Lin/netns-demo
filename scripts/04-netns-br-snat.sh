@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # include demo-magic
-. ~/tools/demo-magic.sh -n
+. ../tools/demo-magic.sh -n
 
 # hide the evidence
 clear
@@ -75,7 +75,7 @@ wait
 pe "ip netns exec ${POD_1_NAME} ip route add default via 10.0.1.1"
 wait
 
-pe "ip netns exec ${POD_1_NAME} ip route"
+pe "ip netns exec ${POD_1_NAME} ip route -n"
 
 pe "iptables -t nat -A POSTROUTING -s 10.0.1.0/24 -j MASQUERADE"
 
