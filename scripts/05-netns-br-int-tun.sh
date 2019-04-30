@@ -16,6 +16,9 @@ VLAN_TAG_200="200"
 BRIDGE_TUN_NAME="br-tun"
 BRIDGE_INT_NAME="br-int"
 
+PATCH_INT_PORT_NAME="patch-int"
+PATCH_TUN_PORT_NAME="patch-tun"
+
 POD_1_NAME="pod1"
 POD_2_NAME="pod2"
 POD_3_NAME="pod3"
@@ -60,17 +63,21 @@ wait
 # pe "ip netns exec ${POD_3_NAME} ip addr"
 # wait
 
-p "# Create a bridge named ${BRIDGE_0_NAME}"
+p "# Create linux bridges"
 pe "ip link add ${BRIDGE_0_NAME} type bridge"
 pe "ip link add ${BRIDGE_1_NAME} type bridge"
 pe "ip link add ${BRIDGE_2_NAME} type bridge"
+
+p "# Set vlan filter for bridges"
 pe "ip link set dev ${BRIDGE_0_NAME} type bridge vlan_filtering ${VLAN_TAG_100}"
 pe "ip link set dev ${BRIDGE_1_NAME} type bridge vlan_filtering ${VLAN_TAG_200}"
 pe "ip link set dev ${BRIDGE_2_NAME} type bridge vlan_filtering ${VLAN_TAG_100}"
+
+p "# Create Open vSwitches"
 pe "ovs-vsctl add-br ${BRIDGE_TUN_NAME}"
 pe "ovs-vsctl add-br ${BRIDGE_INT_NAME}"
 
-p "# Set ${BRIDGE_0_NAME} interface up"
+p "# Set bridges interface up"
 pe "ip link set dev ${BRIDGE_0_NAME} up"
 pe "ip link set dev ${BRIDGE_1_NAME} up"
 pe "ip link set dev ${BRIDGE_2_NAME} up"
@@ -79,10 +86,8 @@ pe "ip link set dev ${BRIDGE_TUN_NAME} up"
 pe "ip link set dev ${BRIDGE_INT_NAME} up"
 
 p "# Patch br-int to br-tun"
-# pe "ovs-vsctl add-port ${BRIDGE_INT_NAME} patch-ovs-1 -- set Interface patch-ovs-1 type=patch -- set Interface patch-ovs-1 options:peer=patch-ovs-2"
-# pe "ovs-vsctl add-port ${BRIDGE_TUN_NAME} patch-ovs-2 -- set Interface patch-ovs-2 type=patch -- set Interface patch-ovs-2 options:peer=patch-ovs-1"
-pe "ovs-vsctl add-port ${BRIDGE_INT_NAME} patch-ovs-1 -- set Interface patch-ovs-1 type=patch options:peer=patch-ovs-2"
-pe "ovs-vsctl add-port ${BRIDGE_TUN_NAME} patch-ovs-2 -- set Interface patch-ovs-2 type=patch options:peer=patch-ovs-1"
+pe "ovs-vsctl add-port ${BRIDGE_INT_NAME} ${PATCH_INT_PORT_NAME} -- set Interface ${PATCH_INT_PORT_NAME} type=patch options:peer=${PATCH_TUN_PORT_NAME}"
+pe "ovs-vsctl add-port ${BRIDGE_TUN_NAME} ${PATCH_TUN_PORT_NAME} -- set Interface ${PATCH_TUN_PORT_NAME} type=patch options:peer=${PATCH_INT_PORT_NAME}"
 
 p "# Add veth pairs from root network namespace"
 pe "ip link add ${VETH_0_NAME} type veth peer name ${VETH_1_NAME}"
@@ -91,7 +96,6 @@ pe "ip link add ${VETH_4_NAME} type veth peer name ${VETH_5_NAME}"
 pe "ip link add ${VETH_BR} type veth peer name ${VETH_0_OVSBR}"
 pe "ip link add ${VETH_BR_1} type veth peer name ${VETH_1_OVSBR}"
 pe "ip link add ${VETH_BR_2} type veth peer name ${VETH_2_OVSBR}"
-pe "ip addr"
 wait
 
 p "Add veth into ${BRIDGE_INT_NAME}"
@@ -99,8 +103,7 @@ pe "ovs-vsctl add-port ${BRIDGE_INT_NAME} ${VETH_0_OVSBR} tag=${VLAN_TAG_100}"
 pe "ovs-vsctl add-port ${BRIDGE_INT_NAME} ${VETH_1_OVSBR} tag=${VLAN_TAG_200}"
 pe "ovs-vsctl add-port ${BRIDGE_INT_NAME} ${VETH_2_OVSBR} tag=${VLAN_TAG_100}"
 
-p "# Put veth pairs in to ${POD_1_NAME}, ${POD_2_NAME} and ${POD_3_NAME} network namespace"
-p "# Doing this operation at root network namespace"
+p "# Put veth pairs in to ${POD_1_NAME}, ${POD_2_NAME} and ${POD_3_NAME} network namespaces"
 pe "ip link set ${VETH_0_NAME} netns ${POD_1_NAME}"
 pe "ip link set ${VETH_2_NAME} netns ${POD_2_NAME}"
 pe "ip link set ${VETH_4_NAME} netns ${POD_3_NAME}"
