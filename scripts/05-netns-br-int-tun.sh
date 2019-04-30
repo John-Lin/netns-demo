@@ -10,6 +10,9 @@ BRIDGE_0_NAME="br0"
 BRIDGE_1_NAME="br1"
 BRIDGE_2_NAME="br2"
 
+VLAN_TAG_100="100"
+VLAN_TAG_200="200"
+
 BRIDGE_TUN_NAME="br-tun"
 BRIDGE_INT_NAME="br-int"
 
@@ -61,6 +64,9 @@ p "# Create a bridge named ${BRIDGE_0_NAME}"
 pe "ip link add ${BRIDGE_0_NAME} type bridge"
 pe "ip link add ${BRIDGE_1_NAME} type bridge"
 pe "ip link add ${BRIDGE_2_NAME} type bridge"
+pe "ip link set dev ${BRIDGE_0_NAME} type bridge vlan_filtering ${VLAN_TAG_100}"
+pe "ip link set dev ${BRIDGE_1_NAME} type bridge vlan_filtering ${VLAN_TAG_200}"
+pe "ip link set dev ${BRIDGE_2_NAME} type bridge vlan_filtering ${VLAN_TAG_100}"
 pe "ovs-vsctl add-br ${BRIDGE_TUN_NAME}"
 pe "ovs-vsctl add-br ${BRIDGE_INT_NAME}"
 
@@ -89,9 +95,9 @@ pe "ip addr"
 wait
 
 p "Add veth into ${BRIDGE_INT_NAME}"
-pe "ovs-vsctl add-port ${BRIDGE_INT_NAME} ${VETH_0_OVSBR}"
-pe "ovs-vsctl add-port ${BRIDGE_INT_NAME} ${VETH_1_OVSBR}"
-pe "ovs-vsctl add-port ${BRIDGE_INT_NAME} ${VETH_2_OVSBR}"
+pe "ovs-vsctl add-port ${BRIDGE_INT_NAME} ${VETH_0_OVSBR} tag=${VLAN_TAG_100}"
+pe "ovs-vsctl add-port ${BRIDGE_INT_NAME} ${VETH_1_OVSBR} tag=${VLAN_TAG_200}"
+pe "ovs-vsctl add-port ${BRIDGE_INT_NAME} ${VETH_2_OVSBR} tag=${VLAN_TAG_100}"
 
 p "# Put veth pairs in to ${POD_1_NAME}, ${POD_2_NAME} and ${POD_3_NAME} network namespace"
 p "# Doing this operation at root network namespace"
